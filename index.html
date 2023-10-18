@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARM JARVIS</title>
+    <style type="text/css" media="all">
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #15202b; /* Dark blue background color */
+            color: #ffffff; /* White text color */
+        }
+
+        header {
+            background-color: #192734; /* Slightly lighter blue for the header */
+            color: #ffffff;
+            padding: 10px; /* Adjusted padding */
+            text-align: center;
+        }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 20px;
+        }
+
+        .input-container {
+            display: flex;
+            margin-bottom: 20px;
+            width: 100%; /* Adjusted width for responsiveness */
+        }
+
+        input {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            flex: 1;
+            font-size: 16px;
+            background-color: #30444e; /* Dark blue input background color */
+            color: #ffffff; /* White text color for input */
+            width: 70%; /* Adjusted width for responsiveness */
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1da1f2; /* Blue button color */
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0f89c2; /* Darker blue on hover */
+        }
+
+        .response-container {
+            background-color: #30444e; /* Dark blue response background color */
+            border-radius: 10px;
+            padding: 20px;
+            width: 80%;
+            text-align: center;
+            display: none;
+            margin-top: 20px;
+        }
+
+        .response-container p {
+            font-size: 18px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .speech-button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #1da1f2; /* Blue speech button color */
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .speech-button:hover {
+            background-color: #0f89c2; /* Darker blue on hover */
+        }
+
+        /* Added additional CSS for responsiveness */
+        @media (max-width: 768px) {
+            input {
+                width: 60%; /* Adjusted width for smaller screens */
+            }
+        }
+
+        @media (max-width: 480px) {
+            input {
+                width: 50%; /* Further adjusted width for even smaller screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Voice Assistant</h1>
+    </header>
+
+    <main>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Ask a question...">
+            <button onclick="handleUserInput()">Ask</button>
+            <button class="speech-button" onclick="startSpeechRecognition()">Speak</button>
+        </div>
+
+        <div class="response-container" id="responseContainer">
+            <p id="responseText"></p>
+        </div>
+    </main>
+    <script>
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+
+        recognition.onresult = (event) => {
+            const userSpeech = event.results[0][0].transcript;
+            document.getElementById('userInput').value = userSpeech;
+            handleUserInput(); // Call handleUserInput directly
+        };
+
+        function handleUserInput() {
+            const userInput = document.getElementById('userInput').value;
+            const responseContainer = document.getElementById('responseContainer');
+            const responseText = document.getElementById('responseText');
+
+            if (userInput.trim() !== '') {
+                const response = processUserInput(userInput);
+                responseText.innerText = response;
+                speakResponse(response);
+
+                document.getElementById('userInput').value = '';
+                responseContainer.style.display = 'block';
+            } else {
+                alert('Please enter a question.');
+            }
+        }
+
+        function processUserInput(userInput) {
+            const commands = {
+                'hello': 'Hello! How can I assist you today?',
+                'how are you': 'I\'m just a computer program, but I\'m here to help you!',
+                'who made you': 'I was created by a team of developers.',
+                'default': 'I\'m sorry, I don\'t understand that command. Please ask something else.'
+            };
+
+            const userCommand = userInput.toLowerCase();
+
+            if (commands.hasOwnProperty(userCommand)) {
+                return commands[userCommand];
+            } else {
+                return commands['default'];
+            }
+        }
+
+        function speakResponse(response) {
+            const utterance = new SpeechSynthesisUtterance(response);
+            const voices = window.speechSynthesis.getVoices();
+
+            // Find a suitable voice, ideally a deep, somewhat robotic one
+            const jarvisVoice = voices.find(voice => voice.name === 'Microsoft David Desktop - English (United States)');
+
+            if (jarvisVoice) {
+                utterance.voice = jarvisVoice;
+            }
+
+            // Modify speech rate and pitch for a robotic effect
+            utterance.rate = 2; // Adjust to your preference
+            utterance.pitch = 1.2; // Adjust to your preference
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function startSpeechRecognition() {
+            document.getElementById('userInput').value = '';  // Clear input field
+            recognition.start();
+        }
+    </script>
+</body>
+</html>
